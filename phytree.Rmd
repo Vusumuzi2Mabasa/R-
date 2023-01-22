@@ -1,0 +1,135 @@
+---
+title: "phylogenic tree"
+author: "Vusi Mabasa"
+date: "2023-01-18"
+output: html_document
+---
+
+
+
+
+```{r}
+library(xfun)
+library(seqinr)
+library(ape)
+library(adegenet)
+library(viridis)
+library(tidyverse)
+library(ggtree)
+library(DECIPHER)
+library(cli)
+```
+
+```{r}
+seqs1 <- "C:/Users/VUSI/Downloads/Amanita1.txt"
+```
+
+```{r}
+seqs <- readDNAStringSet(seqs1)
+seqs
+```
+
+```{r}
+seqs <- OrientNucleotides(seqs)
+```
+
+```{r}
+aligned <- AlignSeqs(seqs)
+```
+
+```{r}
+BrowseSeqs(aligned, highlight=0)
+```
+
+```{r}
+writeXStringSet(aligned, file= "Amanita_aligned.fasta")
+```
+
+```{r}
+DNA <- read.alignment("Amanita_aligned.fasta", format = "fasta")
+
+```
+
+```{r}
+D <- dist.alignment (DNA, matrix = "similarity")
+```
+
+```{r}
+temp <- as.data.frame(as.matrix(D))
+table.paint(temp, cleg=0, clabel.row=0.5, clabel.col=0.5) +scale_color_viridis()
+```
+
+```{r}
+tree <- nj(D)
+class(tree)
+```
+
+```{r}
+tree <- ladderize(tree)
+```
+
+```{r}
+plot(tree, cex=0.6)
+title("Similarity")
+```
+
+```{r}
+h_cluster <- hclust(D, method= "average", members = NULL)
+
+```
+
+
+```{r}
+plot(h_cluster, cex=0.6)
+```
+
+
+```{r}
+ggtree(tree, yscale= "NA") + geom_tiplab(hjust=0.3, size=4, align= T) +xlim (0, 0.5)
+```
+
+
+```{r}
+ggtree(tree, layout= "daylight") + geom_tiplab(hjust= -0.3, size=4, align= T) + xlim (0, 0.5)+ xlim(0, 0.5)
+```
+
+```{r}
+ggtree(tree)+geom_tiplab(hjust = -0.3, size=4, align= T) + xlim(0, 0.5)
+```
+
+```{r}
+ggtree(tree) + 
+  geom_tiplab(hjust= -0.3, size=4, align= T) +
+  geom_hilight(node=12, fill="red", alpha=0.2)+
+  geom_hilight(node=13, fill="yellow", alpha=0.2)+
+  xlim(0, 0.5)
+```  
+```{r}
+ggtree(tree) + 
+  geom_tiplab(hjust= -0.3, size=4, align= T) +
+  geom_hilight(node=12, fill="red", alpha=0.2)+
+  geom_hilight(node=13, fill="yellow", alpha=0.2)+
+  geom_cladelabel(node= 12, label= "cluster1",
+                  color="red", offset= 0.1, barsize=2,
+                  fontsize= 5, align= T, alpha=0.5)+
+  geom_cladelabel(node = 13, label="cluster2",
+                  color="yellow", offset = 0.1, barsize= 2, 
+                  fontsize = 5, align=T, alpha=0.5) +
+  xlim(0, 0.5)
+```
+
+```{r}
+tree.new <- tree
+```
+
+```{r}
+tree.new$tip.label <- aligned$ranges$NAMES
+
+```
+
+
+```{r}
+msaplot(p=ggtree(tree.new), fasta="Amanita_aligned.fasta",
+        window= c(150, 175)) +
+  scale_fill_viridis_d(alpha=0.8)
+```
